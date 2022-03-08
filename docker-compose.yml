@@ -1,0 +1,56 @@
+version: '3'
+services:
+    web_laravel:
+        restart: always
+        build: .
+        container_name: web_laravel
+        volumes:
+        - ./:/var/www/
+        networks:
+        - rede_laravel
+
+    nginx_laravel:
+        build: ./.docker/nginx
+        container_name: nginx_laravel
+        restart: always
+        ports:
+        - "8040:80"
+        volumes:
+        - ./:/var/www
+        depends_on:
+        - web_laravel
+        networks:
+        - rede_laravel
+
+    mysql_laravel:
+        image: mysql
+        container_name: mysql_laravel
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: db_laravel
+            MYSQL_USER: root
+            MYSQL_PASSWORD: root
+        volumes:
+        - ./MySql:/var/lib/mysql
+        networks:
+        - rede_laravel
+
+    phpmyadmin_laravel:
+        image: phpmyadmin/phpmyadmin:latest
+        container_name: phpmyadmin_laravel
+        links:
+        - mysql_laravel
+        ports:
+        - 8041:80
+        environment:
+        - PMA_ARBITRARY=1
+        networks:
+        - rede_laravel
+
+volumes:
+    MySql:
+
+networks:
+  rede_laravel:
+    driver: bridge
